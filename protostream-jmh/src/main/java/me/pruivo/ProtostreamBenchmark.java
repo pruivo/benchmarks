@@ -5,8 +5,10 @@ import static me.pruivo.protostream.BenchmarkSerializationContextInitializer.INS
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
@@ -25,6 +27,9 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
 import me.pruivo.protostream.Address;
+import me.pruivo.protostream.IracEntryVersion;
+import me.pruivo.protostream.IracMetadata;
+import me.pruivo.protostream.TopologyIracVersion;
 import me.pruivo.protostream.User;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -38,6 +43,7 @@ public class ProtostreamBenchmark {
    private final SerializationContext ctx;
    private final Address address;
    private final User user;
+   private final IracMetadata metadata;
 
    public ProtostreamBenchmark() {
       ctx = ProtobufUtil.newSerializationContext();
@@ -52,6 +58,11 @@ public class ProtostreamBenchmark {
       addresses.add(new Address("Yet another street", "1111-222", 56, true));
       addresses.add(new Address("Out of street", "3333-111", 1, true));
       user = new User(10, "John", "Doe", accounts, addresses, 18, User.Gender.MALE, null, Instant.now(), Instant.now().plusMillis(TimeUnit.DAYS.toMillis(30)));
+      Map<String, TopologyIracVersion> versions = new HashMap<>();
+      versions.put("site_1", TopologyIracVersion.newVersion(10));
+      versions.put("site_2", TopologyIracVersion.newVersion(15).increment(15));
+      IracEntryVersion version = new IracEntryVersion(versions);
+      metadata = new IracMetadata("site_1", version);
    }
 
 
@@ -63,6 +74,11 @@ public class ProtostreamBenchmark {
    @Benchmark
    public void testMarshallUser(Blackhole blackhole) throws IOException {
       blackhole.consume(ProtobufUtil.toWrappedByteArray(ctx, user));
+   }
+
+   @Benchmark
+   public void testMarshallIracMetadata(Blackhole blackhole) throws IOException {
+      blackhole.consume(ProtobufUtil.toWrappedByteArray(ctx, metadata));
    }
 
 }

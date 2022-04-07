@@ -10,7 +10,11 @@ import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
  */
 @AutoProtoSchemaBuilder(includeClasses = {
       Address.class,
-      User.class
+      User.class,
+      IracMetadata.class,
+      IracEntryVersion.class,
+      IracEntryVersion.MapEntry.class,
+      TopologyIracVersion.class
 })
 public interface BenchmarkSerializationContextInitializer extends SerializationContextInitializer {
 
