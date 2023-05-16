@@ -1,8 +1,7 @@
 package me.pruivo;
 
-import me.pruivo.state.AuthenticationSessionEntityState;
-import me.pruivo.state.MarshallerState;
-import me.pruivo.state.UserSessionState;
+import me.pruivo.state.*;
+import org.infinispan.protostream.ProtobufUtil;
 import org.openjdk.jmh.annotations.*;
 
 import java.io.IOException;
@@ -34,6 +33,16 @@ public class MarshallingBenchmark {
     @Benchmark
     public Object testAuthSessionUnmarshall(MarshallerState mState, AuthenticationSessionEntityState aState) throws IOException, ClassNotFoundException {
         return mState.marshaller().objectFromByteBuffer(aState.getEntityBytes());
+    }
+
+    @Benchmark
+    public Object testUserSessionsProtoStreamMarshall(ProtoStreamState mState, ProtoStreamUserSessionState uState) throws IOException {
+        return ProtobufUtil.toWrappedByteArray(mState.getCtx(), uState.getEntity());
+    }
+
+    @Benchmark
+    public Object testUserSessionsProtoStreamUnmarshall(ProtoStreamState mState, ProtoStreamUserSessionState uState) throws IOException {
+        return ProtobufUtil.fromWrappedByteArray(mState.getCtx(), uState.getEntityBytes());
     }
 
 }
